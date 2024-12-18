@@ -1,0 +1,24 @@
+name: 🧶 Init Node.js
+
+description: "Set up Node.js and install dependencies"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: latest
+
+    - name: ⚡️ Restore Cache node_modules
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: node_modules-${{hashFiles('pnpm-lock.yaml')}}
+        restore-keys: node_modules-
+
+    - name: 📦 Install Dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: pnpm install --frozen-lockfile
+      shell: bash

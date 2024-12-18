@@ -1,0 +1,38 @@
+name: Clean Cache
+description: Clean cache for Next.js builds
+
+inputs:
+  github-token:
+    description: "GitHub token"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: 🫧 Cleanup Cache
+      shell: bash
+      run: |
+        REF=refs/heads/${{github.ref_name}}
+
+        if [ ${{github.event_name}} = "review_requested"]
+        then
+            REF=refs/pull/${{github.event.number}}/merge
+        fi
+
+
+        echo "⏱️ Fetching list of cache key"
+        cacheKeysForPR=$(gh cache list -r $REF | cut -f 1 )
+
+        ## Setting this to not fail the workflow while deleting cache keys. 
+        set +e
+
+        echo "🧹 Deleting caches..."
+
+        for cacheKey in $cacheKeysForPR
+        do
+          gh cache delete $cacheKey
+        done
+
+        echo "✅ Cache deleted successfully."
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}

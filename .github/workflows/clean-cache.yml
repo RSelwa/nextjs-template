@@ -1,0 +1,21 @@
+name: 🫧 Cleanup Cache on closed Pull requests
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  delete-cache:
+    runs-on: ubuntu-latest
+    name: "🫧 Clean Cache on pull request closed"
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - name: ✨ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🫧 Cleanup Cache
+        uses: ./.github/actions/clean-cache
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
