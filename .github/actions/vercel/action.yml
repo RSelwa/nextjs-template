@@ -1,0 +1,39 @@
+name: Deploy Vercel
+description: Deploy in vercel
+
+inputs:
+  vercel-token:
+    description: "Vercel token"
+    required: true
+  is-prod:
+    description: "Is production deployment"
+    required: true
+    default: false
+    type: boolean
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: 🔼 Install Vercel CLI
+      run: pnpm install --global vercel@canary
+
+    - name: ⬇ Pull Vercel Production Environment Information
+      if: ${{ inputs.is-prod == 'true' }}
+      run: vercel pull --yes --environment=production --token=${{ inputs.vercel-token }}
+
+    - name: 🏗️ Build Production Project Artifacts
+      if: ${{ inputs.is-prod == 'true' }}
+      run: vercel build --prod --token=${{ inputs.vercel-token }}
+
+    - name: ⬇ Pull Vercel Preview Environment Information
+      if: ${{ inputs.is-prod == 'false' }}
+      run: vercel pull --yes --environment=preview --token=${{ inputs.vercel-token }}
+
+    - name: 🏗️ Build Preview Project Artifacts
+      if: ${{ inputs.is-prod == 'false' }}
+      run: vercel build --token=${{ inputs.vercel-token }}
+
+    - name: 🔼 Deploy Project Artifacts to Vercel
+      run: vercel deploy --prebuilt --token=${{ inputs.vercel-token }}
